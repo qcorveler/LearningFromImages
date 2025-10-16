@@ -13,3 +13,4 @@ while True:
     # close the window and application by pressing a key
 
     # YOUR CODE HERE
+    pass
