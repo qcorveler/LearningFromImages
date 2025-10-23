@@ -1,6 +1,10 @@
 import numpy as np
 import cv2
 
+def loadImg(name, image):
+    cv2.imshow(name, image)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
 def make_gaussian(size, fwhm = 3, center=None) -> np.ndarray:
     """ Make a square gaussian kernel.
@@ -39,11 +43,22 @@ def convolution_2d(img, kernel) -> np.ndarray:
     #      black pixels at the border  
     # I.e. do not iterate over the kernel, only over the image. The rest goes with Numpy.
 
-
-    offset = int(kernel.shape[0]/2)
+    # Préparer une image de sortie vide
     newimg = np.zeros(img.shape)
 
     # YOUR CODE HERE
+    img_h, img_w = img.shape
+    k_h, k_w = kernel.shape
+    pad_h, pad_w = k_h // 2, k_w // 2
+
+    # Padding 
+    padded = np.pad(img, ((pad_h, pad_h), (pad_w, pad_w)), mode='edge')
+
+    # Convolution
+    for i in range(img_h):
+        for j in range(img_w):
+            region = padded[i:i + k_h, j:j + k_w]
+            newimg[i, j] = np.sum(region * kernel)
 
     return newimg
 
@@ -51,21 +66,34 @@ def convolution_2d(img, kernel) -> np.ndarray:
 if __name__ == "__main__":
 
     # 1. load image in grayscale
-    
+    image = cv2.imread('graffiti.png', cv2.IMREAD_GRAYSCALE)
+    loadImg("Image normale", image)
 
     # image kernels
-    sobelmask_x = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
-    sobelmask_y = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]])
+    sobelmask_x = np.array([[-1, 0, 1], 
+                            [-2, 0, 2], 
+                            [-1, 0, 1]])
+    sobelmask_y = np.array([[ 1,  2,  1], 
+                            [ 0,  0,  0], 
+                            [-1, -2, -1]])
     gk = make_gaussian(11)
 
     # 2 use image kernels
-
+    blurred = convolution_2d(image, gk)
+    # show the blurred image
+    blurred = blurred.astype(np.uint8)
+    loadImg("blurred", blurred)
+    
     # 3. compute magnitude of gradients
+    sobel_x = convolution_2d(blurred, sobelmask_x)
+    sobel_y = convolution_2d(blurred, sobelmask_y)
+
+    mog = np.sqrt(sobel_x**2 + sobel_y**2)
 
     # Show resulting images
     # Note: sobel_x etc. must be uint8 images to get displayed correctly astype(np.uint8)
-    cv2.imshow("sobel_x", sobel_x)
-    cv2.imshow("sobel_y", sobel_y)
-    cv2.imshow("mog", mog)
+    cv2.imshow("sobel_x", sobel_x.astype(np.uint8))
+    cv2.imshow("sobel_y", sobel_y.astype(np.uint8))
+    cv2.imshow("mog", mog.astype(np.uint8))
     cv2.waitKey(0)
     cv2.destroyAllWindows()
