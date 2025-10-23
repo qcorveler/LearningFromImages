@@ -60,6 +60,7 @@ def concatenateImgColorAndGray(image, gray_image) :
 def changeColorSpace(image, color_conversion_code):
     newImage = cv2.cvtColor(image, color_conversion_code)
     loadImg(f"transformed image with conversion {color_conversion_code}", newImage)
+    return newImage
 
 def thresholding(image):
 
@@ -107,11 +108,14 @@ def canny(image):
 if __name__ == "__main__" :
     image = cv2.imread("graffiti.png") # load the image without modification
     gray_image = cv2.imread("graffiti.png", cv2.IMREAD_GRAYSCALE) # load the image grayscaled
-    #concatenateImgColorAndGray(image, gray_image)
-    #changeColorSpace(image, cv2.COLOR_BGR2RGB)
-    #changeColorSpace(image, cv2.COLOR_BGR2HSV)
-    #changeColorSpace(image, cv2.COLOR_BGR2LAB)
-    #changeColorSpace(image, cv2.COLOR_BGR2YUV)
-    #thresholding(image)
+    concatenateImgColorAndGray(image, gray_image)
+    changeColorSpace(image, cv2.COLOR_BGR2RGB)
+    changeColorSpace(image, cv2.COLOR_BGR2HSV)
+    print("LAB")
+    newImage = changeColorSpace(image, cv2.COLOR_BGR2LAB)
+    print("BGR")
+    changeColorSpace(newImage, cv2.COLOR_LAB2BGR)
+    changeColorSpace(image, cv2.COLOR_BGR2YUV)
+    thresholding(image)
     sobel_filter(image)
     canny(image)

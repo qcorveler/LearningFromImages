@@ -7,27 +7,6 @@ def loadImg(name, image):
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-### Convolution function
-def convolve2d(image, kernel):
-    """Convolution 2D d'une image grayscale avec un noyau, sans fonctions externes."""
-    img_h, img_w = image.shape
-    k_h, k_w = kernel.shape
-    pad_h, pad_w = k_h // 2, k_w // 2
-
-    # Padding symétrique pour conserver la taille
-    padded = np.pad(image, ((pad_h, pad_h), (pad_w, pad_w)), mode='edge')
-
-    # Préparer une image de sortie vide
-    output = np.zeros_like(image, dtype=float)
-
-    # Convolution manuelle
-    for i in range(img_h):
-        for j in range(img_w):
-            region = padded[i:i + k_h, j:j + k_w]
-            output[i, j] = np.sum(region * kernel)
-    return output
-
-
 # APPLICATION 
 ### SIFT
 cap = cv2.VideoCapture(0)
@@ -68,43 +47,3 @@ while True:
 
 cap.release()
 cv2.destroyAllWindows()
-
-### CONVOLUTION
-gaussian_kernel = (1/273) * np.array([
-    [1,  4,  7,  4, 1],
-    [4, 16, 26, 16, 4],
-    [7, 26, 41, 26, 7],
-    [4, 16, 26, 16, 4],
-    [1,  4,  7,  4, 1]
-])
-
-sobel_x = np.array([
-    [-1, 0, 1],
-    [-2, 0, 2],
-    [-1, 0, 1]
-], dtype=float)
-
-sobel_y = np.array([
-    [-1, -2, -1],
-    [ 0,  0,  0],
-    [ 1,  2,  1]
-], dtype=float)
-
-image = cv2.imread('graffiti.png', cv2.IMREAD_GRAYSCALE)
-loadImg("Image normale", image)
-blurred = convolve2d(image, gaussian_kernel)
-
-blurred = blurred.astype(np.uint8)
-loadImg("blurred", blurred)
-
-grad_x = convolve2d(blurred, sobel_x)
-grad_y = convolve2d(blurred, sobel_y)
-
-# Magnitude du gradient
-gradient_magnitude = np.sqrt(grad_x**2 + grad_y**2)
-
-# Normalisation (0–255 pour affichage)
-gradient_magnitude = (gradient_magnitude / np.max(gradient_magnitude)) * 255
-gradient_magnitude = gradient_magnitude.astype(np.uint8)
-
-loadImg('Gradient Magnitude (after sobelx and y convolution)', gradient_magnitude)
