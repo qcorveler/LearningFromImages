@@ -12,6 +12,7 @@ def fourierTransform(img, offset=50,want_save:bool = False,want_plot:bool=True,w
         print("Complex value:", complex(round(np.real(f[100,150]), 2), round(np.imag(f[100,150]), 2)))
         print("Real part:", round(np.real(f[100,150]), 2))
         print("Imaginary part:", round(np.imag(f[100,150]), 2))
+    
         print("Magnitude :", round(np.abs(f[100,150]), 2))
         print("Angle: ", round(np.angle(f[100,150]), 2), "rad")
         
@@ -42,7 +43,7 @@ def fourierTransform(img, offset=50,want_save:bool = False,want_plot:bool=True,w
     if want_save:
         img_norm = cv.normalize(img_filt, None, 0, 255, cv.NORM_MINMAX)
         img_uint8 = np.uint8(img_norm)
-        cv.imwrite("LearningFromImages\Yann\lfi-01\Filtered_image.png", img_uint8)    
+        cv.imwrite("Filtered_image.png", img_uint8)    
 
 
 
@@ -56,7 +57,7 @@ def fourierTransform(img, offset=50,want_save:bool = False,want_plot:bool=True,w
 
 
 if __name__ == "__main__":
-    imgPath = "LearningFromImages/Yann/lfi-01/graffiti.png"
+    imgPath = "graffiti.png"
     img= cv.imread(imgPath, cv.IMREAD_GRAYSCALE)
     
     fourierTransform(img,

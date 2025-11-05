@@ -41,7 +41,6 @@ def convolution_2d(img, kernel) -> np.ndarray:
 
 
     offset = int(kernel.shape[0]/2)
-    print(offset)
     newimg = np.zeros(img.shape)
 
     padded_img = np.pad(img, pad_width=offset, mode='edge')
@@ -55,14 +54,14 @@ def convolution_2d(img, kernel) -> np.ndarray:
 
 
 if __name__ == "__main__":
-    
+
     # 1. load image in grayscale
-    img = cv2.imread("Yann/lfi-01/graffiti.png", cv2.IMREAD_GRAYSCALE)
+    img = cv2.imread("graffiti.png", cv2.IMREAD_GRAYSCALE)
 
     # image kernels
     sobelmask_x = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
     sobelmask_y = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]])
-    gk = make_gaussian(51)
+    gk = make_gaussian(5, fwhm=3)
     # Apply Gaussian filter
     img = convolution_2d(img, gk)
     # 2 use image kernels
