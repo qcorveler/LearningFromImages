@@ -52,6 +52,10 @@ harris_cv = cv2.cornerHarris(gray,3,3,k)
 harris_cv_thres = np.zeros(harris_cv.shape, dtype=np.uint8)
 harris_cv_thres[harris_cv > threshold * harris_cv.max()]= 255
 
+
+# We can add the harris corners on the images 
+img_corners = img.copy()
+img_corners[harris_thres > 0] = [0, 0, 255]
 # just for debugging to create such an image as seen
 # in the assignment figure.
 # img[harris>threshold*harris.max()]=[255,0,0]
@@ -65,10 +69,9 @@ print("====================================")
 os.makedirs("results/harris", exist_ok=True)
 cv2.imwrite("results/harris/Harris_own.png", harris_thres)
 cv2.imwrite("results/harris/Harris_cv.png", harris_cv_thres)
-img_corners = img.copy()
-img_corners[harris_thres > 0] = [0, 0, 255]
+
 cv2.imwrite("results/harris/Image_with_Harris.png", img_corners)
-print('3 images saved')
+print('Images saved in results/harris/')
 cv2.namedWindow('Interactive Systems: Harris Corner')
 while True:
     ch = cv2.waitKey(0)
