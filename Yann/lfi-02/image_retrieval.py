@@ -117,7 +117,7 @@ with open('images/db/result/dict_results_dist.p', "rb") as f:
 
 
 # 5. output (save and/or display) the query results in the order of smallest distance
-output_dir = 'images/db/result/output'
+output_dir = 'results/image_retrieval'
 os.makedirs(output_dir, exist_ok=True)
 
 for img_test_path in images_test:
