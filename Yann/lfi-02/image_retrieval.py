@@ -1,5 +1,5 @@
 import numpy as np
-
+import matplotlib.pyplot as plt
 import cv2
 import glob
 from queue import PriorityQueue
@@ -67,6 +67,7 @@ def calculate_sift(img) :
     sift = cv2.SIFT_create()
     keypoints, descriptors = sift.compute(img, keypoints)
     return descriptors
+
 img = cv2.imread(images[np.random.randint(len(images))])
 descriptors = calculate_sift(img)
 
@@ -115,26 +116,38 @@ with open('images/db/result/dict_results_dist.p', "rb") as f:
     distance_per_imgtest_forimgtrain = pickle.load(f)
 
 
-#    and save the result into a priority queue (q = PriorityQueue())
-q = PriorityQueue()
-for test_img, dists in distance_per_imgtest_forimgtrain.items():
-    # print(distance_per_imgtest_forimgtrain)
-    for train_img, dist in dists.items():
-        # print(train_img, '\n')
-        q.put((float(dist), (test_img, train_img)))
-print(q)
-
 # 5. output (save and/or display) the query results in the order of smallest distance
+output_dir = 'images/db/result/output'
+os.makedirs(output_dir, exist_ok=True)
 
-# YOUR CODE HERE
-
-
-# if __name__ == "__main__" :
-#     print(images_test)
-    # img = cv2.imread(images[np.random.randint(len(images))])
-    # descriptors = calculate_sift(img)
-    # print(descriptors)
-    # print(f"Le nombre de descripteur est de : {len(descriptors)}")
-    # cv2.imshow("A random image", img)
-    # cv2.waitKey(0)  # attend une touche
-    # cv2.destroyAllWindows()  # ferme la fenêtre
+for img_test_path in images_test:
+    dist_dict = distance_per_imgtest_forimgtrain[img_test_path]
+    
+    # Création d'une PriorityQueue spécifique à cette image test
+    q = PriorityQueue()
+    for train_img_path, dist in dist_dict.items():
+        q.put((float(dist), train_img_path))
+    
+    # Charger image test
+    img_test = cv2.imread(img_test_path)
+    test_h, test_w = img_test.shape[:2]
+    concat_list = [img_test]
+    
+    # Extraire les images d'entraînement par distance croissante
+    while not q.empty():
+        dist, train_img_path = q.get()
+        img_train = cv2.imread(train_img_path)
+        train_h, train_w = img_train.shape[:2]
+        scale_ratio = test_h / train_h
+        new_w = int(train_w * scale_ratio)
+        img_train_resized = cv2.resize(img_train, (new_w, test_h))
+        concat_list.append(img_train_resized)
+    
+    # Concaténation horizontale
+    combined = cv2.hconcat(concat_list)
+    
+    # Sauvegarde
+    test_name = os.path.basename(img_test_path).split('.')[0]
+    output_path = os.path.join(output_dir, f"{test_name}_all_train_desc.jpg")
+    cv2.imwrite(output_path, combined)
+    print(f"Saved: {output_path}")
