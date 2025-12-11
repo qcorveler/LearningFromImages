@@ -3,7 +3,8 @@ import numpy as np
 import os
 
 # Load image and convert to gray and floating point
-img = cv2.imread('./images/graffiti.png')
+img = cv2.imread('./lfi-02/images/graffiti.png')
+
 gray = cv2.cvtColor(img,cv2.COLOR_RGB2GRAY)
 gray = np.float32(gray)
 
@@ -37,7 +38,7 @@ trace = Sxx + Syy
 
 # you can compute the resulting image containing the harris corner responses with
 harris =  det - k * (trace ** 2)
-
+print(harris)
 # Filter the harris 'image' with 'harris > threshold*harris.max()'
 # this will give you the indices where values are above the threshold.
 # These are the corner pixel you want to use
@@ -62,22 +63,22 @@ img_corners[harris_thres > 0] = [0, 0, 255]
 
 
 # please leave this - adjust variable name if desired
-print("====================================")
-print("DIFF:", np.sum(np.absolute(harris_thres - harris_cv_thres)))
-print("====================================")
+# print("====================================")
+# print("DIFF:", np.sum(np.absolute(harris_thres - harris_cv_thres)))
+# print("====================================")
 
-os.makedirs("results/harris", exist_ok=True)
-cv2.imwrite("results/harris/Harris_own.png", harris_thres)
-cv2.imwrite("results/harris/Harris_cv.png", harris_cv_thres)
+# os.makedirs("results/harris", exist_ok=True)
+# cv2.imwrite("results/harris/Harris_own.png", harris_thres)
+# cv2.imwrite("results/harris/Harris_cv.png", harris_cv_thres)
 
-cv2.imwrite("results/harris/Image_with_Harris.png", img_corners)
-print('Images saved in results/harris/')
-cv2.namedWindow('Interactive Systems: Harris Corner')
-while True:
-    ch = cv2.waitKey(0)
-    if ch == 27:
-        break
+# cv2.imwrite("results/harris/Image_with_Harris.png", img_corners)
+# print('Images saved in results/harris/')
+# cv2.namedWindow('Interactive Systems: Harris Corner')
+# while True:
+#     ch = cv2.waitKey(0)
+#     if ch == 27:
+#         break
 
-    cv2.imshow('harris',harris_thres)
-    cv2.imshow('harris_cv',harris_cv_thres)
-cv2.destroyAllWindows()
+#     cv2.imshow('harris',harris_thres)
+#     cv2.imshow('harris_cv',harris_cv_thres)
+# cv2.destroyAllWindows()
