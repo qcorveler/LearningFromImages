@@ -30,10 +30,13 @@ CATEGORIES = {
 class MyNeuralNetwork(nn.Module):
     def __init__(self):
         super(MyNeuralNetwork, self).__init__()
-        # TODO: YOUR CODE HERE
+        self.fc1 = nn.Linear(784, 512)
+        self.fc2 = nn.Linear(512, 10)
 
     def forward(self, x):
-        # TODO: YOUR CODE HERE
+        x = x.view(x.size(0), -1)
+        x = F.relu(self.fc1(x))
+        x = self.fc2(x)
         return x
 
     def name(self):
@@ -131,16 +134,21 @@ def plot(train_history, test_history, metric, num_epochs):
 
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
+print(f"Using device: {device}")
 # set seed for reproducability
 torch.manual_seed(0)
 
 # hyperparameter
 # TODO: find good hyperparameters
 # batch_size = ...
+batch_size = 64
 # num_epochs = ...
+num_epochs = 15
 # learning_rate = ...
+learning_rate = 0.01
 # momentum = ...
+momentum = 0.9
+
 
 transform = transforms.Compose([
     # you can add other transformations in this list
@@ -169,6 +177,7 @@ test_loader = DataLoader(dataset=test_set, shuffle=False, **loader_params)
 ## model setup
 model = MyNeuralNetwork().to(device)
 optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum)
+
 criterion = nn.CrossEntropyLoss()
 
 train_acc_history = []
