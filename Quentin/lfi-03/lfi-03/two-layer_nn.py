@@ -12,7 +12,7 @@ learning_rate = 0.0001
 num_epochs = 500
 batch_size = 4
 
-loss_mode = 'cross_entropy'
+loss_mode = 'cross_entropy'  # 'mse' or 'cross_entropy'
 
 loss_train_hist = []
 
@@ -95,7 +95,7 @@ def setup_train():
     counter = 0
     for (label, fnames) in enumerate(train_images):
         for fname in fnames:
-            print(label, fname)
+            # print(label, fname)
             img = cv2.imread(fname, cv2.IMREAD_GRAYSCALE)
             img = cv2.resize(img, (nn_img_size, nn_img_size),
                              interpolation=cv2.INTER_AREA)
@@ -171,7 +171,7 @@ def train(X_train, y_train):
     # for simplicity of this execise you don't need to find useful hyperparameter
     # I've done this for you already and every test image should work for the
     # given very small trainings database and the following parameters.
-    h = 1500
+    h = 1500 # number of hidden units
     std = 0.001
 
     Input_size = X_train.shape[1]
@@ -186,42 +186,49 @@ def train(X_train, y_train):
 
     Trainset_size = X_train.shape[0]
 
+
     # run for num_epochs
-    for i in range(num_epochs):
+    for epoch in range(num_epochs):
 
         # use only a batch of batch_size of the training images in each run
         # sample the batch images randomly from the training set
         # YOUR CODE HERE
 
-        # sample a random batch
-        idx = np.random.choice(Trainset_size, batch_size, replace=False)
-        X_batch = X_train[idx]
-        y_batch = y_train[idx]
+        # sample random batches
+        indices = np.random.permutation(Trainset_size)
 
-        # forward pass for two-layer neural network using ReLU as activation function
-        loss, a2, a1 = forward(X_batch, y_batch, W1, W2, b1, b2)
+        for start_id in range(0, Trainset_size, batch_size):
+            end_id = start_id + batch_size
+            if end_id > Trainset_size:
+                break
 
+            batch_idx = indices[start_id:end_id]
+            X_batch = X_train[batch_idx]
+            y_batch = y_train[batch_idx]
+            # forward pass for two-layer neural network using ReLU as activation function
+            loss, a2, a1 = forward(X_batch, y_batch, W1, W2, b1, b2)
+
+            # backward pass
+            dLdW1, dLdW2, dLdb1, dLdb2 = backward(a2, a1, X_batch, y_batch, W2, a1)
+
+            # print("dCdb2.shape:", dCdb2.shape, dCdb1.shape)
+
+            # depending on the derivatives of W1, and W2 regaring the cost/loss
+            # we need to adapt the values in the negative direction of the
+            # gradient decreasing towards the minimum
+            # we weight the gradient by a learning rate
+            # YOUR CODE HERE
+            W1 = W1 - learning_rate * dLdW1
+            W2 = W2 - learning_rate * dLdW2
+            b1 = b1 - learning_rate * dLdb1
+            b2 = b2 - learning_rate * dLdb2
+
+        
         # print each 10 epochs passed
-        if i % 10 == 0:
-            print(f"iteration {i}: loss {loss}")
-
+        if epoch % 10 == 0:
+            print(f"iteration {epoch}: \tloss {loss}")
         # add loss to loss_train_hist for plotting
-        loss_train_hist.append(loss)
-
-        # backward pass
-        dLdW1, dLdW2, dLdb1, dLdb2 = backward(a2, a1, X_batch, y_batch, W2, a1)
-
-        # print("dCdb2.shape:", dCdb2.shape, dCdb1.shape)
-
-        # depending on the derivatives of W1, and W2 regaring the cost/loss
-        # we need to adapt the values in the negative direction of the
-        # gradient decreasing towards the minimum
-        # we weight the gradient by a learning rate
-        # YOUR CODE HERE
-        W1 = W1 - learning_rate * dLdW1
-        W2 = W2 - learning_rate * dLdW2
-        b1 = b1 - learning_rate * dLdb1
-        b2 = b2 - learning_rate * dLdb2
+        loss_train_hist.append(loss)    
 
     return W1, W2, b1, b2
 
@@ -233,6 +240,8 @@ W1, W2, b1, b2 = train(X_train, y_train)
 # run prediction by computing the forward pass
 test_images = []
 test_images.append((cv2.imread('./images/db/test/flower2.jpg',
+                               cv2.IMREAD_GRAYSCALE), 1))
+test_images.append((cv2.imread('./images/db/test/flower.jpg',
                                cv2.IMREAD_GRAYSCALE), 1))
 test_images.append((cv2.imread('./images/db/test/car.jpg',
                                cv2.IMREAD_GRAYSCALE), 0))

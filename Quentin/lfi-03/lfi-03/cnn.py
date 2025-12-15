@@ -28,16 +28,143 @@ CATEGORIES = {
 
 # implement your own NNs
 class MyNeuralNetwork(nn.Module):
+    # The architecture required in the assignment sheet
     def __init__(self):
         super(MyNeuralNetwork, self).__init__()
-        # TODO: YOUR CODE HERE
+
+        self.conv1 = nn.Conv2d(1, 32, kernel_size=3, padding=1, padding_mode='replicate')
+        self.conv2 = nn.Conv2d(32, 32, kernel_size=3)
+        self.pool1 = nn.MaxPool2d(2, 2)
+        self.drop1 = nn.Dropout(0.25)
+
+        
+        self.conv3 = nn.Conv2d(32, 64, kernel_size=3, padding=1, padding_mode='replicate')
+        self.conv4 = nn.Conv2d(64, 64, kernel_size=3)
+        self.pool2 = nn.MaxPool2d(2, 2)
+        self.drop2 = nn.Dropout(0.25)
+
+        # Fully connected
+        self.fc1 = nn.Linear(64 * 5 * 5, 512)
+        self.fc2 = nn.Linear(512, 10)
 
     def forward(self, x):
-        # TODO: YOUR CODE HERE
+        x = F.relu(self.conv1(x))
+        x = F.relu(self.conv2(x))
+        x = self.pool1(x)
+        x = self.drop1(x)
+
+        x = F.relu(self.conv3(x))
+        x = F.relu(self.conv4(x))
+        x = self.pool2(x)
+        x = self.drop2(x)
+
+        # Classifier
+        x = x.view(x.size(0), -1)   # Flatten
+        x = F.relu(self.fc1(x))
+        x = self.fc2(x)             # logits -> no softmax cause we use the nn.CrossEntropyLoss function which already does the softmax function
+
         return x
 
     def name(self):
         return "MyNeuralNetwork"
+    
+class SimpleCNN(nn.Module):
+    # Simple CNN architecture
+    def __init__(self):
+        super(SimpleCNN, self).__init__()
+
+        self.conv1 = nn.Conv2d(1, 32, kernel_size=3, padding=1)
+        self.conv2 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
+
+        self.pool = nn.MaxPool2d(2, 2)
+
+        self.fc1 = nn.Linear(64 * 7 * 7, 128)
+        self.fc2 = nn.Linear(128, 10)
+
+    def forward(self, x):
+        x = self.pool(F.relu(self.conv1(x)))  # 28 → 14
+        x = self.pool(F.relu(self.conv2(x)))  # 14 → 7
+
+        x = x.view(x.size(0), -1)              # flatten
+        x = F.relu(self.fc1(x))
+        x = self.fc2(x)                        # logits (no softmax, cf above)
+
+        return x
+
+    def name(self):
+        return "SimpleCNN"
+    
+class LeNet(nn.Module):
+    # LeNet-5 architecture
+    def __init__(self):
+        super(LeNet, self).__init__()
+
+        self.conv1 = nn.Conv2d(1, 6, kernel_size=5)
+
+        self.pool1 = nn.AvgPool2d(2, 2)
+
+        self.conv2 = nn.Conv2d(6, 16, kernel_size=5)
+        
+        self.pool2 = nn.AvgPool2d(2, 2)
+
+        self.fc1 = nn.Linear(16 * 4 * 4, 120)
+        self.fc2 = nn.Linear(120, 84)
+        self.fc3 = nn.Linear(84, 10)
+
+    def forward(self, x):
+        x = self.pool1(F.relu(self.conv1(x)))  # 28 → 12
+        x = self.pool2(F.relu(self.conv2(x)))  # 12 → 4
+
+        x = x.view(x.size(0), -1)
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x = self.fc3(x)
+
+        return x
+
+    def name(self):
+        return "LeNet"
+    
+class VGGStyleCNN(nn.Module):
+    # Adapted VGG like model for the size of the input data
+    # After trying firstly the VGG-19 model implementation, the size of the input data was too small to have a satisfying result.
+    # + my computer does not support GPU programming and the training was very time consuming   
+    # Finally I adjusted the number of hidden blocs and layer too adapt to the input size. 
+    # The model is not as deep as actual VGG-Net but has the same style and give good results in a reasonable time 
+    # 
+    def __init__(self):
+        super(VGGStyleCNN, self).__init__()
+
+        self.features = nn.Sequential(
+            nn.Conv2d(1, 32, 3, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(32, 32, 3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(2, 2),  # 28 → 14
+
+            nn.Conv2d(32, 64, 3, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(64, 64, 3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(2,2),   # 14 → 7
+        )
+
+        self.classifier = nn.Sequential(
+            nn.Linear(64 * 7 * 7, 512),
+            nn.ReLU(),
+            nn.Linear(512, 512),
+            nn.ReLU(),
+            nn.Linear(512,10)
+        )
+
+    def forward(self, x):
+        x = self.features(x)
+        x = x.view(x.size(0), -1)
+        x = self.classifier(x)
+        return x
+
+    def name(self):
+        return "VGGStyleCNN"
 
 
 def training(model, data_loader, optimizer, criterion, device):
@@ -116,7 +243,7 @@ def test(model, data_loader, criterion, device):
     return epoch_loss, epoch_acc
 
 
-def plot(train_history, test_history, metric, num_epochs):
+def plot(train_history, test_history, metric, num_epochs, model_name="model"):
 
     plt.title(f"Validation/Test {metric} vs. Number of Training Epochs")
     plt.xlabel(f"Training Epochs")
@@ -126,7 +253,7 @@ def plot(train_history, test_history, metric, num_epochs):
     plt.ylim((0, 1.))
     plt.xticks(np.arange(1, num_epochs + 1, 1.0))
     plt.legend()
-    plt.savefig(f"{metric}.png")
+    plt.savefig(f"{metric}_{model_name}.png")
     plt.show()
 
 
@@ -137,14 +264,15 @@ torch.manual_seed(0)
 
 # hyperparameter
 # TODO: find good hyperparameters
-# batch_size = ...
-# num_epochs = ...
-# learning_rate = ...
-# momentum = ...
+batch_size = 64
+num_epochs = 5
+learning_rate = 0.01
+momentum = 0.9
 
 transform = transforms.Compose([
     # you can add other transformations in this list
-    transforms.ToTensor()
+    transforms.ToTensor(),
+    transforms.Normalize((0.5,), (0.5,))
 ])
 
 # load train and test data
@@ -167,7 +295,10 @@ train_loader = DataLoader(dataset=train_set, shuffle=True, **loader_params)
 test_loader = DataLoader(dataset=test_set, shuffle=False, **loader_params)
 
 ## model setup
-model = MyNeuralNetwork().to(device)
+# model = MyNeuralNetwork().to(device)
+# model = VGGStyleCNN().to(device)
+model = LeNet().to(device)
+# model = SimpleCNN().to(device)
 optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum)
 criterion = nn.CrossEntropyLoss()
 
@@ -182,7 +313,7 @@ since = time.time()
 
 for epoch in range(num_epochs):
 
-    print('Epoch {}/{}'.format(epoch, num_epochs - 1))
+    print('Epoch {}/{}'.format(epoch+1, num_epochs))
     print('-' * 10)
 
     # train
@@ -211,8 +342,8 @@ print(f'Best val Acc: {best_acc:4f}')
 train_acc_history = [h.cpu().numpy() for h in train_acc_history]
 test_acc_history = [h.cpu().numpy() for h in test_acc_history]
 
-plot(train_acc_history, test_acc_history, 'accuracy', num_epochs)
-plot(train_loss_history, test_loss_history, 'loss', num_epochs)
+plot(train_acc_history, test_acc_history, 'accuracy', num_epochs, model.name())
+plot(train_loss_history, test_loss_history, 'loss', num_epochs, model.name())
 
 # plot examples
 example_data, _ = next(iter(test_loader))
@@ -227,5 +358,5 @@ with torch.no_grad():
             1, keepdim=True)[1][i].item()]))
         plt.xticks([])
         plt.yticks([])
-    plt.savefig("examples.png")
+    plt.savefig(f"examples_{model.name()}.png")
     plt.show()
