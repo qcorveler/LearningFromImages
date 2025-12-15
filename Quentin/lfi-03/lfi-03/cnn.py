@@ -38,6 +38,92 @@ class MyNeuralNetwork(nn.Module):
 
     def name(self):
         return "MyNeuralNetwork"
+    
+class SimpleCNN(nn.Module):
+    def __init__(self):
+        super(SimpleCNN, self).__init__()
+
+        self.conv1 = nn.Conv2d(1, 32, kernel_size=3, padding=1)
+        self.conv2 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
+
+        self.pool = nn.MaxPool2d(2, 2)
+
+        self.fc1 = nn.Linear(64 * 7 * 7, 128)
+        self.fc2 = nn.Linear(128, 10)
+
+    def forward(self, x):
+        x = self.pool(F.relu(self.conv1(x)))  # 28 → 14
+        x = self.pool(F.relu(self.conv2(x)))  # 14 → 7
+
+        x = x.view(x.size(0), -1)              # flatten
+        x = F.relu(self.fc1(x))
+        x = self.fc2(x)                        # logits (no softmax!)
+
+        return x
+
+    def name(self):
+        return "SimpleCNN"
+    
+class LeNet(nn.Module):
+    def __init__(self):
+        super(LeNet, self).__init__()
+
+        self.conv1 = nn.Conv2d(1, 6, kernel_size=5)
+        self.conv2 = nn.Conv2d(6, 16, kernel_size=5)
+
+        self.pool = nn.AvgPool2d(2, 2)
+
+        self.fc1 = nn.Linear(16 * 4 * 4, 120)
+        self.fc2 = nn.Linear(120, 84)
+        self.fc3 = nn.Linear(84, 10)
+
+    def forward(self, x):
+        x = self.pool(F.relu(self.conv1(x)))  # 28 → 12
+        x = self.pool(F.relu(self.conv2(x)))  # 12 → 4
+
+        x = x.view(x.size(0), -1)
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x = self.fc3(x)
+
+        return x
+
+    def name(self):
+        return "LeNet"
+    
+class VGGStyleCNN(nn.Module):
+    def __init__(self):
+        super(VGGStyleCNN, self).__init__()
+
+        self.features = nn.Sequential(
+            nn.Conv2d(1, 32, 3, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(32, 32, 3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(2),  # 28 → 14
+
+            nn.Conv2d(32, 64, 3, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(64, 64, 3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(2)   # 14 → 7
+        )
+
+        self.classifier = nn.Sequential(
+            nn.Linear(64 * 7 * 7, 256),
+            nn.ReLU(),
+            nn.Dropout(0.5),
+            nn.Linear(256, 10)
+        )
+
+    def forward(self, x):
+        x = self.features(x)
+        x = x.view(x.size(0), -1)
+        x = self.classifier(x)
+        return x
+
+    def name(self):
+        return "VGGStyleCNN"
 
 
 def training(model, data_loader, optimizer, criterion, device):
@@ -137,14 +223,15 @@ torch.manual_seed(0)
 
 # hyperparameter
 # TODO: find good hyperparameters
-# batch_size = ...
-# num_epochs = ...
-# learning_rate = ...
-# momentum = ...
+batch_size = 64
+num_epochs = 5
+learning_rate = 0.01
+momentum = 0.9
 
 transform = transforms.Compose([
     # you can add other transformations in this list
-    transforms.ToTensor()
+    transforms.ToTensor(),
+    transforms.Normalize((0.5,), (0.5,))
 ])
 
 # load train and test data
@@ -167,7 +254,9 @@ train_loader = DataLoader(dataset=train_set, shuffle=True, **loader_params)
 test_loader = DataLoader(dataset=test_set, shuffle=False, **loader_params)
 
 ## model setup
-model = MyNeuralNetwork().to(device)
+# model = VGGStyleCNN().to(device)
+# model = LeNet().to(device)
+model = SimpleCNN().to(device)
 optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum)
 criterion = nn.CrossEntropyLoss()
 

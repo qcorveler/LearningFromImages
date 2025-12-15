@@ -41,6 +41,7 @@ image_paths = glob.glob('./images/db/train/*/*.jpg')
 X_train = []
 y_train = []
 label_map = {}
+label_map_inversed = {}
 label_counter = 0
 
 for image_path in image_paths:
@@ -61,6 +62,7 @@ for image_path in image_paths:
     label = image_path.split('/')[-2]
     if label not in label_map:
         label_map[label] = label_counter
+        label_map_inversed[label_counter] = label
         label_counter += 1
     y_train.append(label_map[label])
 
@@ -114,7 +116,8 @@ errors = 0
 for i in range(len(test_image_paths)) :
     if y_pred_linear[i] != y_test[i]:
         errors += 1
-    print(f"{test_image_paths[i].split('/')[-1]} : prediction = {y_pred_linear[i]}, reality = {y_test[i]}")
+    print(f"{test_image_paths[i].split('/')[-1]} : \tprediction = {y_pred_linear[i]} ({label_map_inversed[y_pred_linear[i]]}),   \treality = {y_test[i]} ({label_map_inversed[y_test[i]]})")
+
 accuracy = ((len(test_image_paths) - errors) / (len(test_image_paths)))*100
 print(f"accuracy on test data : {accuracy}%")
 
@@ -124,7 +127,7 @@ errors = 0
 for i in range(len(test_image_paths)) :
     if y_pred_rbf[i] != y_test[i]:
         errors += 1
-    print(f"{test_image_paths[i].split('/')[-1]} : prediction = {y_pred_rbf[i]}, reality = {y_test[i]}")
+    print(f"{test_image_paths[i].split('/')[-1]} : \tprediction = {y_pred_rbf[i]} ({label_map_inversed[y_pred_rbf[i]]}),    \treality = {y_test[i]} ({label_map_inversed[y_test[i]]})")
 accuracy = ((len(test_image_paths) - errors) / (len(test_image_paths)))*100
 print(f"accuracy on test data : {accuracy}%")
 
@@ -134,6 +137,7 @@ errors = 0
 for i in range(len(test_image_paths)) :
     if y_pred_poly[i] != y_test[i]:
         errors += 1
-    print(f"{test_image_paths[i].split('/')[-1]} : prediction = {y_pred_poly[i]}, reality = {y_test[i]}")
+    print(f"{test_image_paths[i].split('/')[-1]} : \tprediction = {y_pred_poly[i]} ({label_map_inversed[y_pred_poly[i]]}),    \treality = {y_test[i]} ({label_map_inversed[y_test[i]]})")
+
 accuracy = ((len(test_image_paths) - errors) / (len(test_image_paths)))*100
 print(f"accuracy on test data : {accuracy}%")
