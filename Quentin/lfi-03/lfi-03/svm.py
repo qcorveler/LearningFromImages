@@ -70,6 +70,7 @@ for image_path in image_paths:
 # good results for our dataset.
 
 classifier_linear = svm.SVC(kernel='linear')
+print(y_train)
 classifier_linear.fit(X_train, y_train)
 
 classifier_rbf = svm.SVC(kernel="rbf")
