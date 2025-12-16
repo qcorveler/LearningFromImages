@@ -86,8 +86,8 @@ for img_path in glob.glob(img_db_train_path):
     flattened_descriptor = descriptors.flatten()
     
     X_train.append(flattened_descriptor)
-    # class_name = img_path.split('\\')[-2] # Pour windows
-    class_name = img_path.split('/')[-2] # Pour linux
+    # class_name = img_path.split('\\')[-2] # For windows
+    class_name = img_path.split('/')[-2] # For linux
     y_train.append(class_name)
 # print(X_train)
 # print(y_train)
