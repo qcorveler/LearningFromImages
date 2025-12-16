@@ -8,7 +8,7 @@ np.random.seed(0)
 
 nn_img_size = 32
 num_classes = 3
-learning_rate = 0.0001
+learning_rate = 0.01
 num_epochs = 500
 batch_size = 4
 
