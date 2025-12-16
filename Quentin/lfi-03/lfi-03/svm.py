@@ -59,18 +59,20 @@ for image_path in image_paths:
     X_train.append(descriptors.flatten())
 
     # Extract label from path and encode as integer
-    label = image_path.split('/')[-2]
+    label = image_path.split('\\')[-2]
     if label not in label_map:
         label_map[label] = label_counter
         label_map_inversed[label_counter] = label
         label_counter += 1
+    print(label_map[label])    
+    print(label)
     y_train.append(label_map[label])
 
 # 3. We use scikit-learn to train a SVM classifier - however you need to test with different kernel options to get
 # good results for our dataset.
 
 classifier_linear = svm.SVC(kernel='linear')
-print(y_train)
+
 classifier_linear.fit(X_train, y_train)
 
 classifier_rbf = svm.SVC(kernel="rbf")
