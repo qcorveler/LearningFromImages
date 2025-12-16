@@ -109,7 +109,18 @@ for img_path in glob.glob(img_db_test_path):
     flattened_descriptor = descriptors.flatten()
     
     X_test.append(flattened_descriptor)
-y_test = ["cars", "faces", "flowers", "flowers"]
+
+    # img_name = img_path.split('\\')[-1] # For windows
+    
+    img_name = img_path.split('/')[-1] # For linux
+    if 'car' in img_name :
+        y_test.append('cars')
+    elif 'flower' in img_name :
+        y_test.append('flowers')
+    elif 'face' in img_name :
+        y_test.append('faces') 
+
+
 # 3. We use scikit-learn to train a SVM classifier - however you need to test with different kernel options to get
 # good results for our dataset.
 # 4. We test on a variety of test images ./images/db/test/ by extracting an image descriptor
