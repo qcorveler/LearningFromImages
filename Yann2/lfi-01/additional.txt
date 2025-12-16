@@ -1,0 +1,15 @@
+a) What are the problems of this clustering algorithm?
+
+- Conditionning of the final condition that can be very long.
+- It requires heavily computational ressources.
+- The resultats depends a lot of the initialization.
+- We don't perceive color as far away that the norm of the RGB vectors could be.
+- Two colors far apart in RGB can look similar to the eye, and vice versa.
+
+
+b) How can I improve the results?
+- To reduce the problem of two RGB vector face our perception, we can use the 'LAB' color space before clustreing to reduce the gap. (It's not obvious)
+- Perhap's reduce the noise of colors by bluring the image. (It seems to make better edge but decrease the quality of the image of course)
+- reduce the dimension to accelerate the computational. 
+- We can also improve the initialization by running K-Means several times (e.g., 5 times) and keeping the result with the largest inter-cluster distance (done with n_init but hard to compare)
+
