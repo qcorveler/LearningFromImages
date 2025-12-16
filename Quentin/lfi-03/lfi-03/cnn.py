@@ -348,7 +348,7 @@ plot(train_loss_history, test_loss_history, 'loss', num_epochs, model.name())
 # plot examples
 example_data, _ = next(iter(test_loader))
 with torch.no_grad():
-    output = model(example_data)
+    output = model(example_data.to(device))
 
     for i in range(6):
         plt.subplot(2, 3, i + 1)
